@@ -252,14 +252,17 @@ Created with [Trestle](https://github.com/liormesh/trestle).
 
 #### 5c — Memory System
 
-Determine the correct memory path. **Always use `$HOME`** (not the current working directory) to construct this path. The pattern is:
-`~/.claude/projects/-{HOME-path-with-slashes-replaced-by-dashes}/memory/`
+Determine the correct memory path. **Always use the user's home directory** (not the current working directory) to construct this path. The pattern is:
+`~/.claude/projects/-{home-path-with-slashes-and-backslashes-replaced-by-dashes}/memory/`
 
-Examples:
+**macOS/Linux:** Run `echo $HOME`. Replace each `/` with `-`.
 - `$HOME=/Users/john` → `~/.claude/projects/-Users-john/memory/`
 - `$HOME=/home/john` → `~/.claude/projects/-home-john/memory/`
 
-Run `echo $HOME` to get the value. Replace each `/` with `-`. Create the directory if it doesn't exist.
+**Windows:** Run `echo $env:USERPROFILE`. Replace each `\` with `-`, drop the colon.
+- `C:\Users\john` → `~/.claude/projects/-C-Users-john/memory/`
+
+Create the directory if it doesn't exist.
 
 **Create MEMORY.md:**
 ```markdown
@@ -331,15 +334,22 @@ Before writing code in a project, run a quick health check (build or dev server)
 
 #### 5d — Symlinks
 
-Create symlinks connecting the KB to Claude's directories:
+Create symlinks connecting the KB to Claude's directories. Detect the OS and use the right command.
 
+**macOS/Linux:**
 ```bash
-# Memory → KB
 ln -sfn {memory_path} {$KB_PATH}/claude-memory
-
-# Skills → KB
 ln -sfn ~/.claude/skills {$KB_PATH}/claude-skills
 ```
+
+**Windows (PowerShell — requires Developer Mode or admin):**
+```powershell
+New-Item -ItemType SymbolicLink -Path "{$KB_PATH}\claude-memory" -Target "{memory_path}" -Force
+New-Item -ItemType SymbolicLink -Path "{$KB_PATH}\claude-skills" -Target "$env:USERPROFILE\.claude\skills" -Force
+```
+
+If Windows symlinks fail (no admin/dev mode), fall back to printing a note:
+"Symlinks require Developer Mode on Windows. Enable it in Settings > For developers, then re-run /onboard. Or create the links manually."
 
 #### 5e — Settings
 

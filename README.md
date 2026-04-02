@@ -13,15 +13,21 @@ The fix isn't a better prompt. It's a better workspace.
 ### Prerequisites
 
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code) installed (CLI, VS Code extension, or desktop app)
-- macOS or Linux
+- macOS, Linux, or Windows
 
 ### Install
 
+**macOS / Linux:**
 ```bash
 git clone https://github.com/liormesh/trestle /tmp/trestle && /tmp/trestle/install.sh
 ```
 
-This copies one skill and one file to `~/.claude/`. That's it — [read the script](install.sh), it's 30 lines.
+**Windows (PowerShell):**
+```powershell
+git clone https://github.com/liormesh/trestle $env:TEMP\trestle; & $env:TEMP\trestle\install.ps1
+```
+
+This copies one skill and one file to `~/.claude/`. That's it — read the script ([bash](install.sh) | [powershell](install.ps1)), it's ~30 lines.
 
 ### Run
 
@@ -102,9 +108,11 @@ cd ~/Documents/knowledge-base && git init && gh repo create knowledge-base --pri
 
 If you ever need to share specific files publicly, copy them out rather than making the repo public.
 
+> **Windows note:** Symlinks require [Developer Mode](https://learn.microsoft.com/en-us/windows/apps/get-started/enable-your-device-for-development) enabled. If symlink creation fails during onboarding, Claude will tell you how to fix it.
+
 ## Compatibility
 
-Tested with Claude Code v2.1.x on macOS and Linux. The knowledge base is standard markdown — if Claude Code's internals change, your content is safe. If something breaks after an update, [open an issue](https://github.com/liormesh/trestle/issues).
+Tested with Claude Code v2.1.x on macOS, Linux, and Windows. The knowledge base is standard markdown — if Claude Code's internals change, your content is safe. If something breaks after an update, [open an issue](https://github.com/liormesh/trestle/issues).
 
 ## Re-running
 
