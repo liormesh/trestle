@@ -54,5 +54,5 @@ if [[ "$SCRIPT_DIR" == /tmp/* ]]; then
 fi
 
 echo ""
-echo "  Ready. Open Claude Code and type /onboard to get started."
+echo "  Ready. Open Claude Code from your home directory (cd ~) and type /onboard."
 echo ""

@@ -23,7 +23,7 @@ rm -rf "$TEST_HOME"
 mkdir -p "$TEST_HOME"
 
 # Run install with fake HOME
-HOME="$TEST_HOME" bash "$(dirname "$0")/install.sh"
+HOME="$TEST_HOME" bash "$(dirname "$0")/../install.sh"
 
 echo "  Verifying install..."
 echo ""

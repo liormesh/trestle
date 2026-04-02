@@ -25,9 +25,10 @@ This copies one skill and one file to `~/.claude/`. That's it — [read the scri
 
 ### Run
 
-Open Claude Code and type:
+Open Claude Code **from your home directory** and type:
 
-```
+```bash
+cd ~
 /onboard
 ```
 
@@ -103,7 +104,7 @@ If you ever need to share specific files publicly, copy them out rather than mak
 
 ## Compatibility
 
-Tested with Claude Code v1.x on macOS and Linux. The knowledge base is standard markdown — if Claude Code's internals change, your content is safe. If something breaks after an update, [open an issue](https://github.com/liormesh/claude-onboard-kit/issues).
+Tested with Claude Code v2.1.x on macOS and Linux. The knowledge base is standard markdown — if Claude Code's internals change, your content is safe. If something breaks after an update, [open an issue](https://github.com/liormesh/claude-onboard-kit/issues).
 
 ## Re-running
 
@@ -115,9 +116,17 @@ This setup reflects how I actually work — multiple projects, persistent memory
 
 It won't fit everyone. But if you're building things and want an AI that actually knows your context, this is a solid starting point. Everything is editable after setup.
 
+## Development
+
+Dev scripts live in `dev/`. To test the install script without touching your real config:
+
+```bash
+bash dev/test-fresh-user.sh
+```
+
 ## License
 
-MIT
+MIT — see [LICENSE](LICENSE).
 
 ---
 

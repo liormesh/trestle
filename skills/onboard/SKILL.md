@@ -70,9 +70,9 @@ Ask the user one question at a time. Keep it conversational.
 
 ### Step 4 — Location
 
-**Q9**: "Where do you want your knowledge base? Press enter for the default, or type a path."
+**Q9**: "Where do you want your knowledge base? Default is `~/Documents/knowledge-base/` — just say 'default' or give me a path."
 - Default: `~/Documents/knowledge-base/`
-- Accept any valid path. Create parent directories if needed.
+- Accept any valid absolute path. Create parent directories if needed.
 - Store this as `$KB_PATH` for all subsequent steps.
 
 ### Step 5 — Build Everything
@@ -252,14 +252,14 @@ Created with [Claude Onboard Kit](https://github.com/liormesh/claude-onboard-kit
 
 #### 5c — Memory System
 
-Determine the correct memory path. The path follows this pattern:
-`~/.claude/projects/-{absolute-path-with-dashes}/memory/`
+Determine the correct memory path. **Always use `$HOME`** (not the current working directory) to construct this path. The pattern is:
+`~/.claude/projects/-{HOME-path-with-slashes-replaced-by-dashes}/memory/`
 
-Where the path is the user's home directory with slashes replaced by dashes. For example:
-- Home `/Users/john` → `~/.claude/projects/-Users-john/memory/`
-- Home `/home/john` → `~/.claude/projects/-home-john/memory/`
+Examples:
+- `$HOME=/Users/john` → `~/.claude/projects/-Users-john/memory/`
+- `$HOME=/home/john` → `~/.claude/projects/-home-john/memory/`
 
-Run `whoami` and construct the path accordingly. Create the directory if it doesn't exist.
+Run `echo $HOME` to get the value. Replace each `/` with `-`. Create the directory if it doesn't exist.
 
 **Create MEMORY.md:**
 ```markdown
@@ -413,7 +413,7 @@ You're all set. What would you like to work on?
 
 ## Compatibility
 
-Tested with Claude Code v1.x. The scaffolded files are standard markdown — if Claude Code's internal format changes, your knowledge base content is safe. Only the memory frontmatter format (name/description/type) and SKILL.md format are Claude Code-specific.
+Tested with Claude Code v2.1.x. The scaffolded files are standard markdown — if Claude Code's internal format changes, your knowledge base content is safe. Only the memory frontmatter format (name/description/type) and SKILL.md format are Claude Code-specific.
 
 ## Error Handling
 
