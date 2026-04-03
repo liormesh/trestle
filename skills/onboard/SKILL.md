@@ -95,6 +95,9 @@ Creating:
   ├── resources/
   ├── _private/
   │   └── credentials.md
+  ├── _analytics/
+  │   ├── usage.log               (skill invocation log — auto-populated)
+  │   └── weekly-summary.md       (consolidated weekly — auto-generated)
   ├── claude-memory/                    → ~/.claude/.../memory/
   ├── claude-skills/                    → ~/.claude/skills/
   ├── .gitignore
@@ -102,9 +105,11 @@ Creating:
 
   ~/.claude/.../memory/
   ├── MEMORY.md
+  ├── MEMORY-extended.md
   ├── user_profile.md
   ├── feedback_preferences.md
-  └── feedback_health_check.md
+  ├── feedback_health_check.md
+  └── feedback_memory_size.md
 ```
 
 Then create everything immediately:
@@ -126,6 +131,9 @@ Create `$KB_PATH` with this exact structure. All folders are created, no optiona
 ├── resources/
 ├── _private/
 │   └── credentials.md
+├── _analytics/
+│   ├── usage.log
+│   └── weekly-summary.md
 ├── claude-memory/           ← symlinked
 ├── claude-skills/           ← symlinked
 ├── .gitignore
@@ -221,6 +229,41 @@ _private/
 .DS_Store
 *.swp
 .obsidian/
+```
+
+**books/README.md:**
+```markdown
+# Books — Domain Knowledge Libraries
+
+Each book is a folder with a `_toc.md` index and chapter files.
+
+## Recommended Format
+
+### Table of Contents (`_toc.md`)
+```markdown
+# Book Title
+
+## Chapters
+- [Chapter 1: Title](ch01-file.md) — *Use when: brief hint about when to load this chapter*
+- [Chapter 2: Title](ch02-file.md) — *Use when: another hint*
+```
+
+The "Use when" hints help Claude load only relevant chapters instead of the entire book, saving tokens.
+
+### Chapter Files
+Name as `ch{NN}-{slug}.md`. Keep chapters focused on one topic.
+
+## When to Create a Book
+After you've accumulated 3+ learnings in a domain from real project work. Don't create books preemptively — let patterns emerge from practice.
+```
+
+**_analytics/usage.log** — create as an empty file.
+
+**_analytics/weekly-summary.md:**
+```markdown
+# Weekly Skill Analytics
+
+No data yet. First summary will appear after one week of skill usage.
 ```
 
 **README.md:**
@@ -332,6 +375,42 @@ Before writing code in a project, run a quick health check (build or dev server)
 - If the check surfaces errors, flag them before starting the requested task
 ```
 
+**feedback_memory_size.md** (always created):
+```markdown
+---
+name: MEMORY.md size limit
+description: MEMORY.md must stay under 50 lines — it's the elevator pitch, not the filing cabinet
+type: feedback
+---
+
+MEMORY.md is loaded into EVERY conversation. Keep it under 50 lines: identity, top-3 projects, critical behavioral rules only.
+
+Everything else goes in MEMORY-extended.md (loaded on demand by skills and agents).
+
+**Why:** At ~30 tokens per line, a 100-line MEMORY.md burns 3K tokens before you say a word — every conversation, whether relevant or not.
+
+**How to apply:**
+- When updating MEMORY.md, if it exceeds 50 lines, move overflow to MEMORY-extended.md
+- MEMORY.md = elevator pitch (who, what's active, critical rules)
+- MEMORY-extended.md = full context (all projects, org details, career, references)
+```
+
+**MEMORY-extended.md** (always created — empty overflow target):
+```markdown
+# {Name} — Extended Context
+
+> This file is loaded on demand by skills and agents. For the compact version, see MEMORY.md.
+
+## All Projects
+{Move additional projects here as MEMORY.md grows}
+
+## References
+{Credentials, integrations, external systems}
+
+## Career
+{Goals, hiring, job search context}
+```
+
 #### 5d — Symlinks
 
 Create symlinks connecting the KB to Claude's directories. Detect the OS and use the right command.
@@ -379,6 +458,9 @@ Replace the bootstrap `~/.claude/CLAUDE.md` with permanent global instructions:
 - Credentials: {$KB_PATH}/_private/credentials.md
 - Memory index: check MEMORY.md for persistent context across conversations
 - Skills: available via /skill-name — see claude-skills/ in the KB for the full list
+- No standalone feedback files — write feedback inline to the relevant KB file (skill, book, project overview)
+- Don't create a skill until you've done the workflow manually 3+ times — check existing skills first
+- After invoking a skill, append a line to {$KB_PATH}/_analytics/usage.log
 ```
 
 Only replace if the current CLAUDE.md contains "First Time Setup" (the bootstrap marker). If the user has a custom CLAUDE.md, leave it alone and print a note suggesting they add the KB path.
@@ -417,6 +499,7 @@ Done! Here's your workspace:
 2. Flesh out your project overviews in projects/
 3. As we work together, I'll learn and grow the memory system automatically
 4. Sync to GitHub (private): cd {$KB_PATH} && git init && gh repo create knowledge-base --private --push
+5. Review skill analytics monthly — check _analytics/weekly-summary.md to spot unused skills or improvement opportunities
 
 You're all set. What would you like to work on?
 ```

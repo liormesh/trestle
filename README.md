@@ -55,10 +55,14 @@ Claude asks about your role, projects, tech stack, and preferences, then builds:
 │   └── {your-projects}/        ← one folder per project
 │       └── overview.md
 ├── career/                     ← CV, job search, interviews
-├── books/                      ← reference libraries (grow over time)
+├── books/
+│   └── README.md               ← how to structure knowledge books
 ├── resources/                  ← guides, external docs
 ├── _private/
 │   └── credentials.md          ← API keys (never leaves your machine)
+├── _analytics/
+│   ├── usage.log               ← skill invocation log
+│   └── weekly-summary.md       ← consolidated weekly summary
 ├── claude-memory/              → persistent memory (symlinked)
 ├── claude-skills/              → reusable skills (symlinked)
 └── .gitignore
@@ -69,9 +73,11 @@ Claude asks about your role, projects, tech stack, and preferences, then builds:
 ```
 ~/.claude/.../memory/
 ├── MEMORY.md                   ← index of everything Claude remembers
+├── MEMORY-extended.md          ← overflow context (loaded on demand)
 ├── user_profile.md             ← your role, expertise, preferences
 ├── feedback_preferences.md     ← things Claude should always/never do
-└── feedback_health_check.md    ← pre-session build check
+├── feedback_health_check.md    ← pre-session build check
+└── feedback_memory_size.md     ← keep MEMORY.md under 50 lines
 ```
 
 **Settings** — global instructions and configuration wired up automatically.
@@ -90,6 +96,15 @@ One built-in behavior ships with every install: before writing code in a project
 
 Each project overview has a `## Health Check` section where you define the command. Claude skips the check for quick edits, planning, or read-only tasks — it only runs when you're about to write code and it's been a while since the last session.
 
+## Framework Rules
+
+Trestle scaffolds a few guardrails that prevent common drift patterns:
+
+- **MEMORY.md stays under 50 lines.** It's loaded every conversation — keep it lean. Overflow goes to `MEMORY-extended.md`.
+- **Feedback goes inline.** Don't create standalone feedback files — write corrections directly into the relevant KB file (skill, book chapter, project overview).
+- **Skills need 3 repetitions.** Don't encode a workflow as a skill until you've done it manually at least 3 times.
+- **Analytics are passive.** Skill invocations log to `_analytics/usage.log`. Review monthly to spot dead weight.
+
 ## What's Private?
 
 Your knowledge base contains personal professional context — your name, role, company, projects, expertise, and communication preferences. Here's how privacy works:
@@ -99,6 +114,7 @@ Your knowledge base contains personal professional context — your name, role, 
 | Credentials, API keys | `_private/` | **Git-ignored** — never leaves your machine |
 | Profile, projects, preferences | `me/`, `projects/`, memory files | **In your repo** — keep the repo private |
 | Skills, books, resources | `claude-skills/`, `books/` | **In your repo** — keep the repo private |
+| `_analytics/` | In repo (not sensitive) |
 
 **The KB repo should be private.** When you sync to GitHub, use:
 
