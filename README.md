@@ -72,12 +72,12 @@ Claude asks about your role, projects, tech stack, and preferences, then builds:
 
 ```
 ~/.claude/.../memory/
-├── MEMORY.md                   ← index of everything Claude remembers
-├── MEMORY-extended.md          ← overflow context (loaded on demand)
-├── user_profile.md             ← your role, expertise, preferences
-├── feedback_preferences.md     ← things Claude should always/never do
-├── feedback_health_check.md    ← pre-session build check
-└── feedback_memory_size.md     ← keep MEMORY.md under 50 lines
+├── MEMORY.md                              ← identity + cross-cutting rules + your preferences (inline)
+├── MEMORY-extended.md                     ← overflow context (loaded on demand)
+├── user_profile.md                        ← your role, expertise, communication style
+├── feedback_health_check.md               ← pre-session build check
+├── feedback_memory_size.md                ← signal-density rule for MEMORY.md
+└── feedback_no_standalone_feedback.md     ← new feedback goes inline, not into new files
 ```
 
 **Settings** — global instructions and configuration wired up automatically.
@@ -100,9 +100,9 @@ Each project overview has a `## Health Check` section where you define the comma
 
 Trestle scaffolds a few guardrails that prevent common drift patterns:
 
-- **MEMORY.md stays under 50 lines.** It's loaded every conversation — keep it lean. Overflow goes to `MEMORY-extended.md`.
-- **Feedback goes inline.** Don't create standalone feedback files — write corrections directly into the relevant KB file (skill, book chapter, project overview).
-- **Skills need 3 repetitions.** Don't encode a workflow as a skill until you've done it manually at least 3 times.
+- **MEMORY.md is governed by signal density, not line count.** Every line should affect Claude's behavior in roughly 1-in-5 conversations. Soft cap ~60 lines as a smell test, not a hard limit. Overflow that's rarely-but-occasionally needed goes to `MEMORY-extended.md`.
+- **Feedback goes inline.** Don't create standalone feedback files — write corrections directly into the relevant KB file (skill, book chapter, project overview). Only genuinely cross-cutting rules stay in `claude-memory/`.
+- **Skills need 3 repetitions.** Don't encode a workflow as a skill until you've done it manually at least 3 times. Check `claude-skills/_index.md` first — an existing skill may just need a new mode.
 - **Analytics are passive.** Skill invocations log to `_analytics/usage.log`. Review monthly to spot dead weight.
 
 ## What's Private?
@@ -147,6 +147,10 @@ Dev scripts live in `dev/`. To test the install script without touching your rea
 ```bash
 bash dev/test-fresh-user.sh
 ```
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for release notes.
 
 ## License
 

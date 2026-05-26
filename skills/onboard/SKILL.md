@@ -104,13 +104,15 @@ Creating:
   └── README.md
 
   ~/.claude/.../memory/
-  ├── MEMORY.md
-  ├── MEMORY-extended.md
+  ├── MEMORY.md                       (identity + cross-cutting rules)
+  ├── MEMORY-extended.md              (overflow)
   ├── user_profile.md
-  ├── feedback_preferences.md
-  ├── feedback_health_check.md
-  └── feedback_memory_size.md
+  ├── feedback_health_check.md        (cross-cutting: pre-session build check)
+  ├── feedback_memory_size.md         (cross-cutting: signal-density rule)
+  └── feedback_no_standalone_feedback.md  (cross-cutting: inline future feedback)
 ```
+
+> Pet peeves from Q7 are **not** written as a separate `feedback_preferences.md`. They land inline in MEMORY.md under "Preferences" — keeping the standalone-feedback rule honest from day one.
 
 Then create everything immediately:
 
@@ -308,6 +310,9 @@ Determine the correct memory path. **Always use the user's home directory** (not
 Create the directory if it doesn't exist.
 
 **Create MEMORY.md:**
+
+MEMORY.md is governed by **signal density, not line count** — every line should affect Claude's behavior in roughly 1-in-5 conversations. Q7 pet-peeves go inline as bullets here (not as a standalone `feedback_preferences.md`), because they're cross-cutting behavioral rules.
+
 ```markdown
 # {Name} — Persistent Context
 
@@ -321,9 +326,14 @@ Create the directory if it doesn't exist.
 {numbered list from Q4, with format: **Name** — description. See: KB `projects/{name}/overview.md`}
 
 ## Preferences
-{- Feedback preferences link if Q7 had answers}
-- See: `feedback_preferences.md`
-- `feedback_health_check.md` — run build/dev check before coding sessions; skip for quick edits or read-only tasks
+{Each Q7 pet-peeve as a bullet — clear instruction form. Example: "no emojis", "don't summarize after every action". If Q7 was empty, omit this section.}
+
+## Behavioral Rules
+- `feedback_health_check.md` — run build/dev check before coding sessions; skip for read-only or quick edits
+- `feedback_memory_size.md` — MEMORY.md governed by signal density, ~60-line soft cap
+- `feedback_no_standalone_feedback.md` — new feedback goes inline in the relevant KB file, not a new memory file
+- Don't create a skill until you've done the workflow manually 3+ times — check `claude-skills/_index.md` first
+- After invoking a skill, append a line to `{$KB_PATH}/_analytics/usage.log`
 
 ## KB Structure
 - Vault: `{$KB_PATH}`
@@ -345,16 +355,7 @@ Prefers {communication style} communication. Uses {PM tool} for project manageme
 {Any additional context from Q8}
 ```
 
-**Create feedback_preferences.md** (only if Q7 had answers):
-```markdown
----
-name: feedback_preferences
-description: User's stated preferences for AI assistant behavior — things to always do or never do
-type: feedback
----
-
-{Each pet peeve from Q7 as a bullet point, framed as a clear instruction}
-```
+**Q7 pet-peeves do NOT get a standalone file.** They are inlined as bullets in MEMORY.md under "Preferences" (see template above). This keeps the no-standalone-feedback rule honest from day one — if a fresh install ships with `feedback_preferences.md`, every future Claude session learns "creating feedback files is fine" by example.
 
 **Always create feedback_health_check.md** (this is a built-in best practice, not user-dependent):
 ```markdown
@@ -378,21 +379,57 @@ Before writing code in a project, run a quick health check (build or dev server)
 **feedback_memory_size.md** (always created):
 ```markdown
 ---
-name: MEMORY.md size limit
-description: MEMORY.md must stay under 50 lines — it's the elevator pitch, not the filing cabinet
+name: MEMORY.md size & density rule
+description: MEMORY.md is loaded into every conversation — filter by signal density, not line count
 type: feedback
 ---
 
-MEMORY.md is loaded into EVERY conversation. Keep it under 50 lines: identity, top-3 projects, critical behavioral rules only.
+Every line in MEMORY.md must change Claude's behavior in **at least 1-in-5 conversations**. If a rule only matters for one workflow, project, or audience, inline it in that workflow's KB doc instead of MEMORY.md.
 
-Everything else goes in MEMORY-extended.md (loaded on demand by skills and agents).
-
-**Why:** At ~30 tokens per line, a 100-line MEMORY.md burns 3K tokens before you say a word — every conversation, whether relevant or not.
+**Why:** MEMORY.md is auto-loaded into every conversation as behavioral pressure. With prompt caching the dollar cost is trivial, but density isn't — when everything is flagged "important," nothing is. A strict line cap is a proxy for density that ages poorly: 60 dense lines beat 45 sparse ones.
 
 **How to apply:**
-- When updating MEMORY.md, if it exceeds 50 lines, move overflow to MEMORY-extended.md
-- MEMORY.md = elevator pitch (who, what's active, critical rules)
-- MEMORY-extended.md = full context (all projects, org details, career, references)
+- Before adding a line, ask: "Does this affect Claude's behavior in at least 1-in-5 random conversations?" If no, inline elsewhere
+- Soft cap of ~60 lines as a smell test. If reaching for line 65, the answer is to delete or move-to-extended, not to bend the rule
+- Dated info expires fast (e.g., "as of 2026-05-05"); pointers to KB don't. Prefer pointers
+- MEMORY-extended.md remains the no-limit overflow
+
+**What belongs in MEMORY.md:**
+- Identity (who, role, location, languages)
+- Top 3 active projects — pointer-form
+- Cross-cutting behavioral rules
+- Cross-project tooling that's load-bearing
+- Pointer to MEMORY-extended.md
+
+**What does NOT belong:**
+- Project-specific rules — inline in `projects/<name>/overview.md`
+- Audience-specific rules — inline in that audience's content doc
+- Time-sensitive sprint state — sprints expire, MEMORY.md doesn't auto-clean
+- Anything derivable from `git log`, code, or a quick KB grep
+```
+
+**feedback_no_standalone_feedback.md** (always created):
+```markdown
+---
+name: No standalone feedback files
+description: New feedback goes inline in the relevant KB file (skill, book chapter, project overview), not a new memory file
+type: feedback
+---
+
+When the user gives feedback ("don't do X", "always do Y"), write it inline into the KB file it relates to:
+- Skill behavior feedback → into that skill's SKILL.md
+- Project-specific feedback → into `projects/<name>/overview.md`
+- Book/reference feedback → into the relevant chapter
+- Tone/voice feedback → into `me/tone-of-voice.md` or the relevant register
+
+**Only cross-cutting behavioral rules that apply to most sessions** stay in `claude-memory/` as standalone `feedback_*.md` files. Those are rare — health check, memory-size, deploy conventions. Most feedback is contextual and belongs next to the thing it modifies.
+
+**Why:** Standalone feedback files proliferate fast and lose their anchor. A rule like "don't use lexicon-based sentiment, use Haiku" only makes sense next to the sentiment analysis docs. Stored as `feedback_sentiment.md` in memory, it gets recalled out of context and applied where it doesn't fit.
+
+**How to apply:**
+- Default: find the KB file this feedback relates to and append a note there
+- Promote to `claude-memory/` only if the rule genuinely cross-cuts most conversations
+- If unsure, inline — promoting later is cheap, un-promoting after the rule has been recalled wrongly is not
 ```
 
 **MEMORY-extended.md** (always created — empty overflow target):
@@ -415,14 +452,31 @@ Everything else goes in MEMORY-extended.md (loaded on demand by skills and agent
 
 Create symlinks connecting the KB to Claude's directories. Detect the OS and use the right command.
 
+Ensure both targets exist first — create `~/.claude/skills/` if missing, and seed it with an `_index.md` catalog stub (Claude reads this before deciding whether to create new skills):
+
+```markdown
+# Skills Catalog
+
+This file is the index for `~/.claude/skills/`. Add each skill as a one-line entry below: `- /skill-name — one-line description (use when X)`.
+
+**Rule:** Don't create a skill until the workflow has been done manually 3+ times. Check this list first — maybe an existing skill needs a new mode instead.
+
+## Skills
+_(empty — populate as skills are added)_
+```
+
 **macOS/Linux:**
 ```bash
+mkdir -p ~/.claude/skills
+# write _index.md if it doesn't exist
 ln -sfn {memory_path} {$KB_PATH}/claude-memory
 ln -sfn ~/.claude/skills {$KB_PATH}/claude-skills
 ```
 
 **Windows (PowerShell — requires Developer Mode or admin):**
 ```powershell
+New-Item -ItemType Directory -Path "$env:USERPROFILE\.claude\skills" -Force | Out-Null
+# write _index.md if it doesn't exist
 New-Item -ItemType SymbolicLink -Path "{$KB_PATH}\claude-memory" -Target "{memory_path}" -Force
 New-Item -ItemType SymbolicLink -Path "{$KB_PATH}\claude-skills" -Target "$env:USERPROFILE\.claude\skills" -Force
 ```
@@ -470,13 +524,18 @@ Replace the bootstrap `~/.claude/CLAUDE.md` with permanent global instructions:
 ```markdown
 # Global Instructions
 
+## Knowledge System
 - Knowledge base: {$KB_PATH}
-- Credentials: {$KB_PATH}/_private/credentials.md
-- Memory index: check MEMORY.md for persistent context across conversations
-- Skills: available via /skill-name — see claude-skills/ in the KB for the full list
-- No standalone feedback files — write feedback inline to the relevant KB file (skill, book, project overview)
-- Don't create a skill until you've done the workflow manually 3+ times — check existing skills first
-- After invoking a skill, append a line to {$KB_PATH}/_analytics/usage.log
+- Credentials: {$KB_PATH}/_private/credentials.md (use autonomously, don't ask)
+- Memory index: check MEMORY.md for persistent context; MEMORY-extended.md for full project/career details
+- Skills: available via /skill-name — see `claude-skills/_index.md` for the catalog
+
+## Rules
+- **MEMORY.md is governed by signal density, not line count.** Every line must affect behavior in ≥1-in-5 conversations. Soft cap ~60 lines as a smell test. Full guideline: `claude-memory/feedback_memory_size.md`.
+- **No standalone feedback files.** Write feedback inline to the relevant KB file (skill, book chapter, project overview). Only cross-cutting behavioral rules stay in `claude-memory/`.
+- **Don't create a skill until you've done the workflow manually 3+ times.** Check `claude-skills/_index.md` first — maybe an existing skill just needs a new mode.
+- **Single source of truth.** The KB vault is authoritative. Write once, to the correct location.
+- **Analytics.** After invoking a skill, append a line to `{$KB_PATH}/_analytics/usage.log`.
 ```
 
 Only replace if the current CLAUDE.md contains "First Time Setup" (the bootstrap marker). If the user has a custom CLAUDE.md, leave it alone and print a note suggesting they add the KB path.
@@ -497,10 +556,12 @@ Done! Here's your workspace:
   _private/credentials.md .... API keys (git-ignored)
 
 **Memory System** (~/.claude/.../memory/)
-  MEMORY.md .................. context index
-  user_profile.md ............ your profile memory
-  feedback_preferences.md .... your preferences
-  feedback_health_check.md ... pre-session build check
+  MEMORY.md .......................... context index + preferences (inline)
+  MEMORY-extended.md ................. overflow context
+  user_profile.md .................... your profile memory
+  feedback_health_check.md ........... pre-session build check
+  feedback_memory_size.md ............ signal-density rule
+  feedback_no_standalone_feedback.md . inline-feedback rule
 
 **Symlinks**
   claude-memory/ → memory system
