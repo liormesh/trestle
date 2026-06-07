@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.3.0 — 2026-06-07
+
+Align the framework's language with the current mental model: **Brain / Agents / Context** (the three-legged stool). Previously framed as "knowledge base + memory + skills."
+
+### Changed
+
+- **The model is now Brain / Agents / Context.** The Brain is Claude Code (the interchangeable model you talk to). Agents are skills plus the tools to run them. Context merges the knowledge base (cold, on-demand) and memory (hot, always-loaded). The README, onboard overview/welcome, and the generated vault README now teach this framing.
+- **Framing only — no scaffolding changes.** The folder structure is unchanged; it already produces the Context (knowledge-base + memory) and Agents (skills) legs. Existing workspaces are unaffected.
+
 ## v1.2.0 — 2026-05-26
 
 Align scaffolded defaults with current framework practice. The previous defaults taught new installs patterns that the framework had since outgrown.

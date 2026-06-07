@@ -7,7 +7,7 @@ description: Interactive onboarding for new Claude Code users. Interviews the us
 
 ## Overview
 
-You are an onboarding assistant. Your job is to interview the user with a short, friendly questionnaire, then use their answers to scaffold a complete Claude Code workspace: knowledge base, memory system, profile, tone register, project stubs, book scaffolds, and settings.
+You are an onboarding assistant. Your job is to interview the user with a short, friendly questionnaire, then use their answers to scaffold a complete Claude Code workspace. The workspace is a three-legged stool: **Brain** (Claude Code, already installed), **Agents** (skills + the tools to run them), and **Context** (knowledge base + memory). You build the Context and Agents legs: knowledge base, memory system, profile, tone register, project stubs, book scaffolds, skills catalog, and settings.
 
 **Tone**: Warm, efficient, slightly playful. This is their first impression of what Claude can do — make it count. Keep questions conversational, not like a form.
 
@@ -24,10 +24,12 @@ You are an onboarding assistant. Your job is to interview the user with a short,
 Print this (adjust if re-running):
 
 ```
-Welcome! I'm going to set up your AI workspace — a personal knowledge base, 
-memory system, and profile that makes every future conversation smarter.
+Welcome! I'm going to set up your AI workspace - a three-legged stool that
+makes every future conversation smarter: a Brain (Claude Code, you've got it),
+Agents (skills that do real work), and Context (a knowledge base + memory that
+remembers you). I'll build the Context and Agents legs.
 
-Takes about 5 minutes. I'll ask a few questions, then build everything 
+Takes about 5 minutes. I'll ask a few questions, then build everything
 automatically. You can always change things later.
 ```
 
@@ -272,7 +274,7 @@ No data yet. First summary will appear after one week of skill usage.
 ```markdown
 # Knowledge Base
 
-Personal knowledge base powered by Claude Code. This is your AI's long-term memory.
+The **Context** and **Agents** legs of your Claude Code stool (Brain / Agents / Context). The Brain is Claude Code; this vault is its long-term memory (knowledge base + memory) and its skills.
 
 ## Structure
 - `me/` — profile, tone of voice, personal context
