@@ -6,7 +6,9 @@ Most people install Claude Code and start chatting. That works — for about a w
 
 The fix isn't a better prompt. It's a better workspace.
 
-**Trestle** is an interactive setup tool that builds your personal AI workspace in 5 minutes. It asks who you are, what you build, and how you like to work — then scaffolds a knowledge base, memory system, and profile that makes every conversation smarter than the last.
+That workspace is a three-legged stool: a **Brain** (the model you talk to), **Agents** (skills plus the tools to do real work), and **Context** (everything it should remember and know). The Brain is Claude Code itself - Trestle builds the other two legs.
+
+**Trestle** is an interactive setup tool that scaffolds your Context and wires up your Agents in 5 minutes. It asks who you are, what you build, and how you like to work, then sets up the knowledge base, memory, and skills that make every conversation smarter than the last.
 
 ## Quick Start
 
@@ -42,9 +44,11 @@ cd ~
 
 ## What It Does
 
-Claude asks about your role, projects, tech stack, and preferences, then builds:
+Claude asks about your role, projects, tech stack, and preferences, then builds the two legs that sit on the Brain (Claude Code):
 
-**A Knowledge Base** — structured folder for everything Claude needs to know about you:
+### Context - what it knows & remembers
+
+A **cold layer** (knowledge base) - structured folders for everything Claude should know about you, pulled in on demand:
 
 ```
 ~/Documents/knowledge-base/     (or wherever you choose)
@@ -68,7 +72,7 @@ Claude asks about your role, projects, tech stack, and preferences, then builds:
 └── .gitignore
 ```
 
-**A Memory System** — persistent context that follows you across conversations:
+A **hot layer** (memory) - persistent context loaded into every conversation:
 
 ```
 ~/.claude/.../memory/
@@ -80,7 +84,11 @@ Claude asks about your role, projects, tech stack, and preferences, then builds:
 └── feedback_no_standalone_feedback.md     ← new feedback goes inline, not into new files
 ```
 
-**Settings** — global instructions and configuration wired up automatically.
+### Agents - how it acts
+
+Skills (reusable workflows) plus the tools to run them, wired up under `~/.claude/skills/` with an `_index.md` catalog. You add agents as repeatable work emerges - the rule is to build one only after you've done the task by hand 3+ times.
+
+**Settings** - global instructions and safe-by-default permissions, configured automatically.
 
 ## How It Works After Setup
 
