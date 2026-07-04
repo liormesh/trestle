@@ -1,5 +1,33 @@
 # Changelog
 
+## v1.4.0 — 2026-07-04
+
+Ship the **Agents leg with something in it**, and turn the "it grows the more you use it" promise from a claim into shipped rituals. Until now a fresh install scaffolded the Context leg well but left the Agents catalog empty and the growth loop to chance.
+
+### Added
+
+- **Two starter session-ritual skills ship with every install**, alongside `/onboard`:
+  - **`/cq <project>`** — *calling a project.* Tunes a session into one project's full context (resume/handoff doc, overview, gotchas, deploy rules) and runs the health check before you start. The Context leg as a one-command ritual. Read-and-orient only.
+  - **`/73`** — *sign-off.* End-of-session checklist that confirms it's safe to end, surfaces open action items, and **writes the session's learnings back** to memory and the KB (following the no-standalone-feedback and signal-density rules). This is the ritual that actually runs the growth loop — corrections become memory and finished work accumulates on purpose, not by luck.
+- **`feedback_memory_decay.md`** now ships with every install — a periodic active / archive / promote sweep so the hot layer (MEMORY.md) stays dense as it accumulates.
+- **`project_skill_backlog.md`** now ships with every install — the 3x-skill rule made auditable. Recurring manual workflows get logged with dated evidence before they earn a skill.
+- **`_index.md` now ships populated** with the three starter skills instead of an empty stub, so the "check the catalog first" rule has real entries from conversation #1.
+
+### Changed
+
+- **Analytics wording corrected.** `weekly-summary.md` previously implied a summary would "appear" automatically — there is no background job. It's now honestly framed as a manual consolidation target you fill on your memory-decay sweep.
+- **Installers copy all starter skills**, not just `/onboard` (bash loop + PowerShell `foreach`).
+- **MEMORY.md and CLAUDE.md templates** now reference the session rituals, the memory-decay sweep, and the skill backlog.
+- **README** documents the three shipped skills, the growth-loop rituals, and the corrected analytics story.
+
+### Migration (existing workspaces)
+
+No action required — new files only affect fresh installs. To retrofit an existing workspace: re-run `/onboard` (options b/c never overwrite your content), or copy `skills/cq/` + `skills/73/` into `~/.claude/skills/`, add `feedback_memory_decay.md` + `project_skill_backlog.md` to your memory dir, and list `/cq` + `/73` in your `_index.md`.
+
+### Why
+
+The workshop this tool supports teaches Brain / Agents / Context and sells the *slope* — "it grows the more you sit on it." A fresh install told that story but didn't ship the machinery that runs it: the Agents catalog was empty, nothing wrote learnings back at session end, and there was no home for skill candidates or a decay cadence. `/cq` + `/73` + the two new files close that gap, so a new user *feels* the loop from day one instead of being asked to take it on faith.
+
 ## v1.3.0 — 2026-06-07
 
 Align the framework's language with the current mental model: **Brain / Agents / Context** (the three-legged stool). Previously framed as "knowledge base + memory + skills."

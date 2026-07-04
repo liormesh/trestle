@@ -9,6 +9,8 @@ description: Interactive onboarding for new Claude Code users. Interviews the us
 
 You are an onboarding assistant. Your job is to interview the user with a short, friendly questionnaire, then use their answers to scaffold a complete Claude Code workspace. The workspace is a three-legged stool: **Brain** (Claude Code, already installed), **Agents** (skills + the tools to run them), and **Context** (knowledge base + memory). You build the Context and Agents legs: knowledge base, memory system, profile, tone register, project stubs, book scaffolds, skills catalog, and settings.
 
+**Starter agents already installed.** The install step ships three skills into `~/.claude/skills/`: `/onboard` (this one), `/cq` (tune a session into one project's context), and `/73` (sign-off — writes the session's learnings back to memory and the KB). `/cq` and `/73` are the two rituals that run the growth loop — the user has working agents to inspect and use from day one, before they build their own. Your job is to make sure the catalog and rules reference them.
+
 **Tone**: Warm, efficient, slightly playful. This is their first impression of what Claude can do — make it count. Keep questions conversational, not like a form.
 
 **Principles**:
@@ -111,7 +113,9 @@ Creating:
   ├── user_profile.md
   ├── feedback_health_check.md        (cross-cutting: pre-session build check)
   ├── feedback_memory_size.md         (cross-cutting: signal-density rule)
-  └── feedback_no_standalone_feedback.md  (cross-cutting: inline future feedback)
+  ├── feedback_no_standalone_feedback.md  (cross-cutting: inline future feedback)
+  ├── feedback_memory_decay.md        (cross-cutting: periodic active/archive sweep)
+  └── project_skill_backlog.md        (logs 3x-rule skill candidates as they recur)
 ```
 
 > Pet peeves from Q7 are **not** written as a separate `feedback_preferences.md`. They land inline in MEMORY.md under "Preferences" — keeping the standalone-feedback rule honest from day one.
@@ -265,9 +269,15 @@ After you've accumulated 3+ learnings in a domain from real project work. Don't 
 
 **_analytics/weekly-summary.md:**
 ```markdown
-# Weekly Skill Analytics
+# Skill Analytics — Review Target
 
-No data yet. First summary will appear after one week of skill usage.
+`usage.log` is appended to every time a skill runs (raw log). This file is where
+*you* consolidate it — there is no background job. On your periodic memory sweep
+(see `feedback_memory_decay.md`), skim `usage.log` here and note: which skills
+earn their keep, which are dead weight, and which manual workflow keeps recurring
+without a skill yet (a candidate for `project_skill_backlog.md`).
+
+No data yet — first consolidation happens on your first sweep.
 ```
 
 **README.md:**
@@ -334,8 +344,13 @@ MEMORY.md is governed by **signal density, not line count** — every line shoul
 - `feedback_health_check.md` — run build/dev check before coding sessions; skip for read-only or quick edits
 - `feedback_memory_size.md` — MEMORY.md governed by signal density, ~60-line soft cap
 - `feedback_no_standalone_feedback.md` — new feedback goes inline in the relevant KB file, not a new memory file
-- Don't create a skill until you've done the workflow manually 3+ times — check `claude-skills/_index.md` first
+- `feedback_memory_decay.md` — periodic (monthly) sweep: active / archive / promote
+- Don't create a skill until you've done the workflow manually 3+ times — log candidates in `project_skill_backlog.md`, check `claude-skills/_index.md` first
 - After invoking a skill, append a line to `{$KB_PATH}/_analytics/usage.log`
+
+## Session Rituals
+- **`/cq <project>`** — opening call: tune this session into one project's full context before working
+- **`/73`** — sign-off: end-of-session checklist that writes the session's learnings back to memory + KB
 
 ## KB Structure
 - Vault: `{$KB_PATH}`
@@ -434,6 +449,53 @@ When the user gives feedback ("don't do X", "always do Y"), write it inline into
 - If unsure, inline — promoting later is cheap, un-promoting after the rule has been recalled wrongly is not
 ```
 
+**feedback_memory_decay.md** (always created):
+```markdown
+---
+name: Memory decay sweep
+description: Periodically review memory and the KB — promote what's load-bearing, archive what's stale — so the hot layer stays dense
+type: feedback
+---
+
+Memory and the KB accumulate. Left unattended, MEMORY.md fills with stale sprint
+state and one-off notes, and the signal-density rule quietly rots. Run a sweep on
+a cadence (monthly is a good default, or whenever MEMORY.md crosses its soft cap).
+
+**Why:** The hot layer (MEMORY.md) is loaded into every conversation. Its value is
+density, not completeness. A sweep is what keeps "loaded every time" and "worth
+loading every time" the same set.
+
+**How to apply — three buckets per line/file:**
+- **Active** — still changes behavior in ~1-in-5 sessions. Keep it in MEMORY.md.
+- **Archive** — was true, no longer load-bearing. Move to MEMORY-extended.md or the
+  relevant project doc; delete if fully superseded.
+- **Promote** — a correction you've repeated across sessions that isn't captured yet.
+  Write it to its correct home (inline per the no-standalone-feedback rule).
+
+While you're in there, skim `_analytics/usage.log` for dead-weight skills and for
+recurring manual workflows that belong in `project_skill_backlog.md`.
+```
+
+**project_skill_backlog.md** (always created — empty backlog):
+```markdown
+---
+name: Skill backlog
+description: Candidate skills — workflows done by hand enough times to be worth encoding, with dated evidence
+type: project
+---
+
+# Skill backlog
+
+The 3x rule made auditable. Before a workflow becomes a skill it earns its place
+here: log it the first time you notice you've done it by hand, and add a dated tick
+each time it recurs. Build the skill only once there are 3+ ticks — and check
+`claude-skills/_index.md` first, in case an existing skill just needs a new mode.
+
+| Candidate workflow | Evidence (dated runs) | Status |
+|---|---|---|
+| _(empty — add candidates as recurring manual work shows up)_ | | |
+```
+
 **MEMORY-extended.md** (always created — empty overflow target):
 ```markdown
 # {Name} — Extended Context
@@ -454,17 +516,19 @@ When the user gives feedback ("don't do X", "always do Y"), write it inline into
 
 Create symlinks connecting the KB to Claude's directories. Detect the OS and use the right command.
 
-Ensure both targets exist first — create `~/.claude/skills/` if missing, and seed it with an `_index.md` catalog stub (Claude reads this before deciding whether to create new skills):
+Ensure both targets exist first — create `~/.claude/skills/` if missing, and seed it with an `_index.md` catalog that lists the starter skills the installer shipped (Claude reads this before deciding whether to create new skills). If `_index.md` already exists, make sure the three starter skills are listed; don't clobber other entries.
 
 ```markdown
 # Skills Catalog
 
 This file is the index for `~/.claude/skills/`. Add each skill as a one-line entry below: `- /skill-name — one-line description (use when X)`.
 
-**Rule:** Don't create a skill until the workflow has been done manually 3+ times. Check this list first — maybe an existing skill needs a new mode instead.
+**Rule:** Don't create a skill until the workflow has been done manually 3+ times (log candidates in `claude-memory/project_skill_backlog.md`). Check this list first — maybe an existing skill needs a new mode instead.
 
 ## Skills
-_(empty — populate as skills are added)_
+- /onboard — one-time workspace setup (use when: first-time Claude Code setup)
+- /cq — tune a session into one project's full context (use when: starting work on a specific project)
+- /73 — sign-off checklist that writes the session's learnings back to memory + KB (use when: ending a session)
 ```
 
 **macOS/Linux:**
@@ -530,12 +594,13 @@ Replace the bootstrap `~/.claude/CLAUDE.md` with permanent global instructions:
 - Knowledge base: {$KB_PATH}
 - Credentials: {$KB_PATH}/_private/credentials.md (use autonomously, don't ask)
 - Memory index: check MEMORY.md for persistent context; MEMORY-extended.md for full project/career details
-- Skills: available via /skill-name — see `claude-skills/_index.md` for the catalog
+- Skills: available via /skill-name — see `claude-skills/_index.md` for the catalog. Session rituals: `/cq <project>` to tune in, `/73` to sign off.
 
 ## Rules
 - **MEMORY.md is governed by signal density, not line count.** Every line must affect behavior in ≥1-in-5 conversations. Soft cap ~60 lines as a smell test. Full guideline: `claude-memory/feedback_memory_size.md`.
 - **No standalone feedback files.** Write feedback inline to the relevant KB file (skill, book chapter, project overview). Only cross-cutting behavioral rules stay in `claude-memory/`.
-- **Don't create a skill until you've done the workflow manually 3+ times.** Check `claude-skills/_index.md` first — maybe an existing skill just needs a new mode.
+- **Sweep memory periodically.** Monthly (or when MEMORY.md crosses its soft cap): active / archive / promote — `claude-memory/feedback_memory_decay.md`.
+- **Don't create a skill until you've done the workflow manually 3+ times.** Log candidates in `claude-memory/project_skill_backlog.md`; check `claude-skills/_index.md` first — maybe an existing skill just needs a new mode.
 - **Single source of truth.** The KB vault is authoritative. Write once, to the correct location.
 - **Analytics.** After invoking a skill, append a line to `{$KB_PATH}/_analytics/usage.log`.
 ```
@@ -564,6 +629,13 @@ Done! Here's your workspace:
   feedback_health_check.md ........... pre-session build check
   feedback_memory_size.md ............ signal-density rule
   feedback_no_standalone_feedback.md . inline-feedback rule
+  feedback_memory_decay.md ........... periodic active/archive/promote sweep
+  project_skill_backlog.md ........... 3x-rule skill candidates
+
+**Skills** (~/.claude/skills/)
+  /onboard ........................... this setup (re-runnable)
+  /cq <project> ...................... tune a session into one project's context
+  /73 ................................ sign-off — writes learnings back to memory + KB
 
 **Symlinks**
   claude-memory/ → memory system

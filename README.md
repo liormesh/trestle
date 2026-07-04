@@ -29,7 +29,7 @@ git clone https://github.com/liormesh/trestle /tmp/trestle && /tmp/trestle/insta
 git clone https://github.com/liormesh/trestle $env:TEMP\trestle; & $env:TEMP\trestle\install.ps1
 ```
 
-This copies one skill and one file to `~/.claude/`. That's it — read the script ([bash](install.sh) | [powershell](install.ps1)), it's ~30 lines.
+This copies the starter skills (`/onboard`, `/cq`, `/73`) and a bootstrap file to `~/.claude/`. That's it — read the script ([bash](install.sh) | [powershell](install.ps1)), it's ~40 lines.
 
 ### Run
 
@@ -66,7 +66,7 @@ A **cold layer** (knowledge base) - structured folders for everything Claude sho
 │   └── credentials.md          ← API keys (never leaves your machine)
 ├── _analytics/
 │   ├── usage.log               ← skill invocation log
-│   └── weekly-summary.md       ← consolidated weekly summary
+│   └── weekly-summary.md       ← where you consolidate it (on your sweep)
 ├── claude-memory/              → persistent memory (symlinked)
 ├── claude-skills/              → reusable skills (symlinked)
 └── .gitignore
@@ -81,12 +81,20 @@ A **hot layer** (memory) - persistent context loaded into every conversation:
 ├── user_profile.md                        ← your role, expertise, communication style
 ├── feedback_health_check.md               ← pre-session build check
 ├── feedback_memory_size.md                ← signal-density rule for MEMORY.md
-└── feedback_no_standalone_feedback.md     ← new feedback goes inline, not into new files
+├── feedback_no_standalone_feedback.md     ← new feedback goes inline, not into new files
+├── feedback_memory_decay.md               ← periodic active/archive/promote sweep
+└── project_skill_backlog.md               ← logs 3x-rule skill candidates as they recur
 ```
 
 ### Agents - how it acts
 
-Skills (reusable workflows) plus the tools to run them, wired up under `~/.claude/skills/` with an `_index.md` catalog. You add agents as repeatable work emerges - the rule is to build one only after you've done the task by hand 3+ times.
+Skills (reusable workflows) plus the tools to run them, wired up under `~/.claude/skills/` with an `_index.md` catalog. Three skills ship out of the box so you're not staring at an empty catalog:
+
+- **`/onboard`** - the setup interview (re-runnable).
+- **`/cq <project>`** - the opening call. Tunes a session into one project's full context (overview, gotchas, deploy rules, health check) before you start. This is the Context leg as a one-command ritual.
+- **`/73`** - the sign-off. Runs an end-of-session checklist and *writes the session's learnings back* to memory and the KB. This is the ritual that runs the growth loop - corrections become memory and finished work accumulates, on purpose, instead of by luck.
+
+You add your own agents as repeatable work emerges - the rule is to build one only after you've done the task by hand 3+ times (logged in `project_skill_backlog.md`).
 
 **Settings** - global instructions and safe-by-default permissions, configured automatically.
 
@@ -95,6 +103,8 @@ Skills (reusable workflows) plus the tools to run them, wired up under `~/.claud
 The system grows with you:
 - When you correct Claude ("don't do X"), it saves a **feedback memory** so it never repeats the mistake
 - As you work on projects, context accumulates in project overviews and memory
+- End a session with **`/73`** and it writes the session's decisions and learnings back before you go - so "it grows the more you use it" is a ritual, not a hope
+- Start a session with **`/cq <project>`** and it loads that project's full context up front - no re-briefing
 - You can add **skills** (reusable prompt templates) and **books** (reference libraries) as your needs grow
 - After a month, Claude knows your stack, your style, and your projects well enough to be genuinely useful
 
@@ -110,8 +120,9 @@ Trestle scaffolds a few guardrails that prevent common drift patterns:
 
 - **MEMORY.md is governed by signal density, not line count.** Every line should affect Claude's behavior in roughly 1-in-5 conversations. Soft cap ~60 lines as a smell test, not a hard limit. Overflow that's rarely-but-occasionally needed goes to `MEMORY-extended.md`.
 - **Feedback goes inline.** Don't create standalone feedback files — write corrections directly into the relevant KB file (skill, book chapter, project overview). Only genuinely cross-cutting rules stay in `claude-memory/`.
-- **Skills need 3 repetitions.** Don't encode a workflow as a skill until you've done it manually at least 3 times. Check `claude-skills/_index.md` first — an existing skill may just need a new mode.
-- **Analytics are passive.** Skill invocations log to `_analytics/usage.log`. Review monthly to spot dead weight.
+- **Skills need 3 repetitions.** Don't encode a workflow as a skill until you've done it manually at least 3 times. Log candidates in `claude-memory/project_skill_backlog.md`; check `claude-skills/_index.md` first — an existing skill may just need a new mode.
+- **Sweep memory periodically.** Monthly (or when MEMORY.md crosses its soft cap), run an active / archive / promote pass so the hot layer stays dense — `claude-memory/feedback_memory_decay.md`.
+- **Analytics are passive.** Skill invocations log to `_analytics/usage.log`. Consolidate into `_analytics/weekly-summary.md` on your sweep — there's no background job — to spot dead-weight skills and recurring manual work worth a skill.
 
 ## What's Private?
 

@@ -40,7 +40,9 @@ echo "  ---"
 sed 's/^/  /' "$TEST_HOME/.claude/CLAUDE.md"
 echo "  ---"
 echo ""
-echo "  SKILL.md exists: $([ -f "$TEST_HOME/.claude/skills/onboard/SKILL.md" ] && echo 'yes' || echo 'NO')"
+for skill in onboard cq 73; do
+  echo "  /$skill SKILL.md exists: $([ -f "$TEST_HOME/.claude/skills/$skill/SKILL.md" ] && echo 'yes' || echo 'NO')"
+done
 echo ""
 echo "  Install script works correctly."
 echo ""

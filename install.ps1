@@ -14,22 +14,24 @@ Write-Host ""
 Write-Host "  Installing to: $ClaudeDir"
 Write-Host ""
 Write-Host "  What this does:"
-Write-Host "    1. Copies the /onboard skill to $SkillsDir\onboard\"
+Write-Host "    1. Copies the starter skills (/onboard, /cq, /73) to $SkillsDir\"
 Write-Host "    2. Creates a bootstrap CLAUDE.md (triggers /onboard on first run)"
 Write-Host ""
-Write-Host "  That's it - two files. The real setup happens when you type /onboard."
+Write-Host "  That's it - a handful of files. The real setup happens when you type /onboard."
 Write-Host ""
 
 # 1. Ensure ~/.claude exists
 New-Item -ItemType Directory -Force -Path $SkillsDir | Out-Null
 
-# 2. Copy the /onboard skill
-$OnboardDir = Join-Path $SkillsDir "onboard"
-if (Test-Path $OnboardDir) {
-    Write-Host "  [skip] /onboard skill already installed"
-} else {
-    Copy-Item -Recurse (Join-Path $ScriptDir "skills\onboard") $OnboardDir
-    Write-Host "  [done] Installed /onboard skill -> $OnboardDir"
+# 2. Copy the starter skills (onboard + the session rituals cq / 73)
+foreach ($skill in @("onboard", "cq", "73")) {
+    $DestDir = Join-Path $SkillsDir $skill
+    if (Test-Path $DestDir) {
+        Write-Host "  [skip] /$skill skill already installed"
+    } else {
+        Copy-Item -Recurse (Join-Path $ScriptDir "skills\$skill") $DestDir
+        Write-Host "  [done] Installed /$skill skill -> $DestDir"
+    }
 }
 
 # 3. Create bootstrap CLAUDE.md (only if none exists)
