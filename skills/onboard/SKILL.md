@@ -101,9 +101,10 @@ Creating:
   │   └── credentials.md
   ├── _analytics/
   │   ├── usage.log               (skill invocation log — auto-populated)
-  │   └── weekly-summary.md       (consolidated weekly — auto-generated)
+  │   └── weekly-summary.md       (you consolidate this on your memory sweep)
   ├── claude-memory/                    → ~/.claude/.../memory/
   ├── claude-skills/                    → ~/.claude/skills/
+  ├── _first-run-check.md               (Leg-1 checkpoint — read it back in a fresh session)
   ├── .gitignore
   └── README.md
 
@@ -144,6 +145,7 @@ Create `$KB_PATH` with this exact structure. All folders are created, no optiona
 │   └── weekly-summary.md
 ├── claude-memory/           ← symlinked
 ├── claude-skills/           ← symlinked
+├── _first-run-check.md
 ├── .gitignore
 └── README.md
 ```
@@ -279,6 +281,26 @@ without a skill yet (a candidate for `project_skill_backlog.md`).
 
 No data yet — first consolidation happens on your first sweep.
 ```
+
+**_first-run-check.md:**
+
+A cold KB file that doubles as the **Leg-1 checkpoint** (the first thing a workshop confirms, and a good self-test for any solo setup). Pick a distinctive, arbitrary magic word — a couple of uncommon words plus a number, e.g. `copper-lantern-42` — so it can't be guessed, and write it into the file. Do NOT put the word in MEMORY.md or anywhere hot; the whole point is that Claude has to *open the file* to answer.
+
+```markdown
+# First-run check
+
+A tiny proof that your Brain is standing - run it in a **fresh** Claude Code session.
+
+**Ask:** "Read _first-run-check.md and tell me the magic word."
+**Pass:** Claude replies with the magic word below.
+
+One reply proves two things at once: the engine runs, and it can read your files on
+demand (your first taste of cold context). If it can't, fix that before building anything else.
+
+Magic word: copper-lantern-42
+```
+
+> Swap in your own magic word — the example above is just a placeholder. This file is not secret; it stays in the repo (it's not under `_private/`).
 
 **README.md:**
 ```markdown
@@ -621,6 +643,7 @@ Done! Here's your workspace:
   books/ ..................... reference libraries (empty, grows over time)
   career/ .................... CV, job search (empty)
   _private/credentials.md .... API keys (git-ignored)
+  _first-run-check.md ........ Leg-1 checkpoint (read it back in a fresh session)
 
 **Memory System** (~/.claude/.../memory/)
   MEMORY.md .......................... context index + preferences (inline)
@@ -646,11 +669,12 @@ Done! Here's your workspace:
   ~/.claude/settings.json .... KB path added
 
 **Next steps:**
-1. Add API keys to _private/credentials.md
-2. Flesh out your project overviews in projects/
-3. As we work together, I'll learn and grow the memory system automatically
-4. Sync to GitHub (private): cd {$KB_PATH} && git init && gh repo create knowledge-base --private --push
-5. Review skill analytics monthly — check _analytics/weekly-summary.md to spot unused skills or improvement opportunities
+1. Verify it: open a fresh session and say "Read _first-run-check.md and tell me the magic word." A correct reply means the Brain is standing (engine + file access).
+2. Add API keys to _private/credentials.md
+3. Flesh out your project overviews in projects/
+4. As we work together, I'll learn and grow the memory system automatically
+5. Sync to GitHub (private): cd {$KB_PATH} && git init && gh repo create knowledge-base --private --push
+6. Review skill analytics monthly — check _analytics/weekly-summary.md to spot unused skills or improvement opportunities
 
 You're all set. What would you like to work on?
 ```

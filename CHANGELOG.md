@@ -1,5 +1,25 @@
 # Changelog
 
+## v1.5.0 — 2026-07-06
+
+Ship the **first-run check** — a one-line proof that a fresh install actually works.
+
+### Added
+
+- **`_first-run-check.md` now scaffolds with every workspace.** It's a cold KB file holding a
+  distinctive magic word. In a fresh Claude Code session you ask *"Read _first-run-check.md and tell me
+  the magic word"*; a correct reply proves the Brain leg end to end — the engine runs **and** it can read
+  your files on demand (a first taste of cold context). The word lives only in the file (never in hot
+  memory), so answering it requires actually opening the file.
+
+### Why
+
+The workshop's first hands-on checkpoint has everyone read a "checkpoint file" back — but no install ever
+shipped one, so the check had no target. Scaffolding `_first-run-check.md` makes that checkpoint real out
+of the box, and gives solo users the same fast "is it alive?" self-test. (Also corrected a stale
+"auto-generated" note on `weekly-summary.md` in the onboard tree preview — it's consolidated by hand on the
+memory sweep, matching the file's own content.)
+
 ## v1.4.0 — 2026-07-04
 
 Ship the **Agents leg with something in it**, and turn the "it grows the more you use it" promise from a claim into shipped rituals. Until now a fresh install scaffolded the Context leg well but left the Agents catalog empty and the growth loop to chance.

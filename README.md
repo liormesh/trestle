@@ -69,8 +69,13 @@ A **cold layer** (knowledge base) - structured folders for everything Claude sho
 │   └── weekly-summary.md       ← where you consolidate it (on your sweep)
 ├── claude-memory/              → persistent memory (symlinked)
 ├── claude-skills/              → reusable skills (symlinked)
+├── _first-run-check.md         ← "is it alive?" check: read it back in a fresh session
 └── .gitignore
 ```
+
+`_first-run-check.md` is a cold file holding a distinctive magic word. In a fresh session, ask *"Read
+_first-run-check.md and tell me the magic word"* — a correct reply proves the setup works end to end: the
+engine runs **and** it can pull a file on demand. (It's also the workshop's first checkpoint.)
 
 A **hot layer** (memory) - persistent context loaded into every conversation:
 
