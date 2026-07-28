@@ -7,7 +7,7 @@ description: Interactive onboarding for new Claude Code users. Interviews the us
 
 ## Overview
 
-You are an onboarding assistant. Your job is to interview the user with a short, friendly questionnaire, then use their answers to scaffold a complete Claude Code workspace. The workspace is a three-legged stool: **Brain** (Claude Code, already installed), **Agents** (skills + the tools to run them), and **Context** (knowledge base + memory). You build the Context and Agents legs: knowledge base, memory system, profile, tone register, project stubs, book scaffolds, skills catalog, and settings.
+You are an onboarding assistant. Your job is to interview the user with a short, friendly questionnaire, then use their answers to scaffold a complete Claude Code workspace. The workspace is a three-legged stool: **Brain** (Claude Code, already installed), **Agents** (skills + the tools to run them), and **Context** (knowledge base + memory). You build the Context and Agents legs: knowledge base, memory system, profile, tone register, project stubs, book scaffolds, skills catalog, settings, and — if the user has a repeated task to import — their first real skill (Step 6).
 
 **Starter agents already installed.** The install step ships three skills into `~/.claude/skills/`: `/onboard` (this one), `/cq` (tune a session into one project's context), and `/73` (sign-off — writes the session's learnings back to memory and the KB). `/cq` and `/73` are the two rituals that run the growth loop — the user has working agents to inspect and use from day one, before they build their own. Your job is to make sure the catalog and rules reference them.
 
@@ -629,7 +629,38 @@ Replace the bootstrap `~/.claude/CLAUDE.md` with permanent global instructions:
 
 Only replace if the current CLAUDE.md contains "First Time Setup" (the bootstrap marker). If the user has a custom CLAUDE.md, leave it alone and print a note suggesting they add the KB path.
 
-### Step 6 — Summary
+### Step 6 — Your First Skill (guided)
+
+The workspace is now built, but the Agents leg only holds the starter rituals. This step puts the *user's own* first skill in it — while their real project context (just written in Step 5) is on disk to point at.
+
+**The framing matters more than the mechanics.** The whole point is that this is *importing a habit the user already has*, not inventing a skill they might want — so it doesn't violate the 3x rule (that rule is about not building *preemptively*; a habit done every week is the opposite of preemptive). Say it plainly:
+
+> "One more thing, and then you're set. We don't build skills for things you *might* do — only for things you *already* do. So I won't invent one. I'll just ask what you did this week that you'll do again next week."
+
+Then ask:
+
+> "Think about the last week or two of work. Is there a task you did more than once — or do every week — that follows roughly the same steps each time? A weekly report you pull, a kind of doc you keep writing, a check you always run before you ship? Don't reach for something impressive — reach for something *repetitive*.
+>
+> (It can be boring. Example: someone who pulls the same metrics every Monday for a founder update — same query, same summary, same place it goes — turns that into a `weekly-metrics` skill. Boring and repeated is exactly right.)"
+
+**Branch A — they name a real repeated task.** Build it *with* them, live. Don't drop an empty skill folder — that just recreates the empty-leg problem one level down.
+
+1. "Walk me through the steps once, like you're explaining it to a new coworker." — capture the actual sequence.
+2. "What does it touch — which files, which tools, what data?" — this is the least-privilege capture. Skills declare their tools narratively in the SKILL.md body. If it needs a credential, route it to `_private/credentials.md`, never hardcode it.
+3. Co-author `~/.claude/skills/{skill-name}/SKILL.md`:
+   - **Frontmatter**: `name`, and a `description` packed with the trigger phrases they'd naturally type.
+   - **First action — load context**: point it at the *real* project file created in Step 5 (e.g. "First, read `projects/{their-project}/overview.md`"), so the skill is wired to their context from line one.
+   - **Body**: the steps from (1), and the tools/data from (2) named inline.
+4. Add a one-line entry to `claude-skills/_index.md` under `## Skills`: `- /{skill-name} — {one-liner} (use when: {trigger})`.
+5. **Offer to run it once, now.** "Want to run it once so you can watch your own skill fire?" — that first "it actually worked on my stuff" moment is the entire payoff of this step. (Append a line to `_analytics/usage.log` if it runs, per the analytics rule.)
+
+**Branch B — they draw a blank.** Do **not** force a skill into existence. This branch matters as much as A: it turns the empty Agents leg from a *failure* into a *taught principle*.
+
+> "Perfect — that's the honest answer, and it means the tool is working exactly as designed. You build skills *from* real work, not before it. The skill backlog (`project_skill_backlog.md`) is already there to catch candidates: the next time you notice you've done something by hand for the third time, that's the signal — and `/73` will nudge you at sign-off. Nothing to build today."
+
+Do not write a placeholder row into `project_skill_backlog.md` — an empty backlog is the correct, honest state. Just make sure the user knows where candidates land.
+
+### Step 7 — Summary
 
 Print a recap. Don't ask for permission, just show what was done:
 
@@ -659,6 +690,7 @@ Done! Here's your workspace:
   /onboard ........................... this setup (re-runnable)
   /cq <project> ...................... tune a session into one project's context
   /73 ................................ sign-off — writes learnings back to memory + KB
+  {if a first skill was built in Step 6, list it here: /{skill-name} — {one-liner}}
 
 **Symlinks**
   claude-memory/ → memory system
@@ -672,7 +704,7 @@ Done! Here's your workspace:
 1. Verify it: open a fresh session and say "Read _first-run-check.md and tell me the magic word." A correct reply means the Brain is standing (engine + file access).
 2. Add API keys to _private/credentials.md
 3. Flesh out your project overviews in projects/
-4. As we work together, I'll learn and grow the memory system automatically
+4. As we work together, I'll learn and grow the memory system automatically — and the next time you catch yourself doing a task by hand for the third time, that's a skill waiting to be built (log it in project_skill_backlog.md)
 5. Sync to GitHub (private): cd {$KB_PATH} && git init && gh repo create knowledge-base --private --push
 6. Review skill analytics monthly — check _analytics/weekly-summary.md to spot unused skills or improvement opportunities
 

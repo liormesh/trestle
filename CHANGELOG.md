@@ -1,5 +1,23 @@
 # Changelog
 
+## v1.6.0 — 2026-07-28
+
+Close the cold-start gap on the **Agents leg**: onboarding now ends by building the user's *first real skill* with them, from a task they already do — so they leave with something valuable in the leg, not an empty catalog and a rule that says "wait."
+
+### Added
+
+- **`/onboard` now has a guided first-skill step (Step 6), run after the workspace is scaffolded** so the new skill can point at the project files just written. It's framed deliberately as *importing a habit you already have*, not inventing one:
+  - **If the user names a repeated task** (a weekly report, a pre-ship check, a doc they keep writing), Claude co-authors the `SKILL.md` with them — frontmatter with real trigger phrases, a first-action context load wired to their actual `projects/{name}/overview.md`, tools declared inline (least-privilege; secrets routed to `_private/credentials.md`) — registers it in `_index.md`, and **offers to run it once** so they watch their own skill fire.
+  - **If they draw a blank**, nothing is built. The step converts the empty Agents leg into a *taught principle*: skills come from real work, the backlog (`project_skill_backlog.md`) is already there to catch candidates, and `/73` will nudge at sign-off. No placeholder row is written — an empty backlog is the correct state.
+
+### Why
+
+A fresh install scaffolded the Context leg richly but left the value-bearing Agents leg nearly empty, and the 3x-rule (correctly) told brand-new users to *wait* before building skills — a cold-start paradox in a tool that sells "up to speed quicker." The fix respects the rule rather than bending it: a task done every week isn't preemptive, it's a habit worth encoding. Either outcome is a win — the user walks away having watched their own skill run on their own data, or understanding precisely what earns the next one. (Pairs with the reference stool as the two halves of "what does a full leg look like" — an example to study, and one of your own to keep.)
+
+### Migration (existing workspaces)
+
+No action required. To get the guided step on an existing workspace, re-run `/onboard` (options a/b never overwrite your content) — or just build a skill by hand from your backlog; the mechanics are the same.
+
 ## v1.5.0 — 2026-07-06
 
 Ship the **first-run check** — a one-line proof that a fresh install actually works.

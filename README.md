@@ -99,7 +99,9 @@ Skills (reusable workflows) plus the tools to run them, wired up under `~/.claud
 - **`/cq <project>`** - the opening call. Tunes a session into one project's full context (overview, gotchas, deploy rules, health check) before you start. This is the Context leg as a one-command ritual.
 - **`/73`** - the sign-off. Runs an end-of-session checklist and *writes the session's learnings back* to memory and the KB. This is the ritual that runs the growth loop - corrections become memory and finished work accumulates, on purpose, instead of by luck.
 
-You add your own agents as repeatable work emerges - the rule is to build one only after you've done the task by hand 3+ times (logged in `project_skill_backlog.md`).
+**And, at the end of setup, your first *own* skill.** Onboarding closes by asking for one task you *already* do every week - a report you pull, a check you always run - and builds it into a real skill with you, then runs it once so you watch it fire. This is importing a habit, not inventing one, so it doesn't break the 3x rule below. If you don't have one yet, that's the right answer too: nothing gets built, and you leave knowing exactly what earns the next skill.
+
+You add more agents the same way as repeatable work emerges - the rule is to build one only after you've done the task by hand 3+ times (logged in `project_skill_backlog.md`).
 
 **Settings** - global instructions and safe-by-default permissions, configured automatically.
 
