@@ -2,7 +2,7 @@
 
 The setup tool I wish existed when I started building with Claude Code.
 
-Most people install Claude Code and start chatting. That works — for about a week. Then you realize the AI doesn't remember your name, keeps suggesting React when you use Vue, and has no idea you've told it three times to stop adding emojis.
+Most people install Claude Code and start chatting. That works - for about a week. Then you realize the AI doesn't remember your name, keeps suggesting React when you use Vue, and has no idea you've told it three times to stop adding emojis.
 
 The fix isn't a better prompt. It's a better workspace.
 
@@ -29,7 +29,7 @@ git clone https://github.com/liormesh/trestle /tmp/trestle && /tmp/trestle/insta
 git clone https://github.com/liormesh/trestle $env:TEMP\trestle; & $env:TEMP\trestle\install.ps1
 ```
 
-This copies the starter skills (`/onboard`, `/cq`, `/73`) and a bootstrap file to `~/.claude/`. That's it — read the script ([bash](install.sh) | [powershell](install.ps1)), it's ~40 lines.
+This copies the starter skills (`/onboard`, `/cq`, `/73`) and a bootstrap file to `~/.claude/`. That's it - read the script ([bash](install.sh) | [powershell](install.ps1)), it's ~40 lines.
 
 ### Run
 
@@ -60,7 +60,8 @@ A **cold layer** (knowledge base) - structured folders for everything Claude sho
 │       └── overview.md
 ├── career/                     ← CV, job search, interviews
 ├── books/
-│   └── README.md               ← how to structure knowledge books
+│   ├── README.md               ← how to structure knowledge books
+│   └── dataviz/                ← shipped example book (powers /visualize)
 ├── resources/                  ← guides, external docs
 ├── _private/
 │   └── credentials.md          ← API keys (never leaves your machine)
@@ -74,7 +75,7 @@ A **cold layer** (knowledge base) - structured folders for everything Claude sho
 ```
 
 `_first-run-check.md` is a cold file holding a distinctive magic word. In a fresh session, ask *"Read
-_first-run-check.md and tell me the magic word"* — a correct reply proves the setup works end to end: the
+_first-run-check.md and tell me the magic word"* - a correct reply proves the setup works end to end: the
 engine runs **and** it can pull a file on demand. (It's also the workshop's first checkpoint.)
 
 A **hot layer** (memory) - persistent context loaded into every conversation:
@@ -93,17 +94,18 @@ A **hot layer** (memory) - persistent context loaded into every conversation:
 
 ### Agents - how it acts
 
-Skills (reusable workflows) plus the tools to run them, wired up under `~/.claude/skills/` with an `_index.md` catalog. Three skills ship out of the box so you're not staring at an empty catalog:
+Skills (reusable workflows) plus the tools to run them, wired up under `~/.claude/skills/` with an `_index.md` catalog. Four skills ship out of the box so you're not staring at an empty catalog:
 
 - **`/onboard`** - the setup interview (re-runnable).
 - **`/cq <project>`** - the opening call. Tunes a session into one project's full context (overview, gotchas, deploy rules, health check) before you start. This is the Context leg as a one-command ritual.
-- **`/73`** - the sign-off. Runs an end-of-session checklist and *writes the session's learnings back* to memory and the KB. This is the ritual that runs the growth loop - corrections become memory and finished work accumulates, on purpose, instead of by luck.
+- **`/73`** - the sign-off. Runs an end-of-session checklist and *writes the session's learnings back* to memory and the KB. This is the ritual that runs the growth loop - corrections become memory and finished work accumulates, on purpose, instead of by luck. It also runs the 3x rule: if a workflow recurred enough to be worth encoding, `/73` offers to turn it into a skill on the spot.
+- **`/visualize`** - a ready working skill: turns a plan, report, or dataset into a **self-contained HTML or PDF** artifact (one file, opens offline). It's also the worked example of the **skill + book** pattern - it ships paired with a `dataviz` book in `books/`, and loads that book's chapters on demand instead of carrying the craft in its own body.
 
 **And, at the end of setup, your first *own* skill.** Onboarding closes by asking for one task you *already* do every week - a report you pull, a check you always run - and builds it into a real skill with you, then runs it once so you watch it fire. This is importing a habit, not inventing one, so it doesn't break the 3x rule below. If you don't have one yet, that's the right answer too: nothing gets built, and you leave knowing exactly what earns the next skill.
 
 You add more agents the same way as repeatable work emerges - the rule is to build one only after you've done the task by hand 3+ times (logged in `project_skill_backlog.md`).
 
-**Settings** - global instructions and safe-by-default permissions, configured automatically.
+**Settings** - global instructions and a starter permission **seatbelt** (not a cage), configured automatically. The deny list catches the obvious foot-guns (`rm -rf`, force-push, reading `.env`); it is a coarse backstop, **not a security boundary** - pattern rules don't see a `DROP TABLE` that arrives inside `psql -c` or an MCP call. Real control is the permission *mode* you run in (and, if you want per-command risk-gating, a `PreToolUse` hook). Treat `_private/credentials.md` the same way: handing Claude the keys is a convenience with a real blast radius - put in only what you need it to act on.
 
 ## How It Works After Setup
 
@@ -119,27 +121,27 @@ The system grows with you:
 
 One built-in behavior ships with every install: before writing code in a project, Claude runs a quick health check (`npm run build`, `cargo check`, or whatever your project uses) to verify the baseline is clean. This catches broken deps, stale env, and half-finished migrations before you're deep into new work.
 
-Each project overview has a `## Health Check` section where you define the command. Claude skips the check for quick edits, planning, or read-only tasks — it only runs when you're about to write code and it's been a while since the last session.
+Each project overview has a `## Health Check` section where you define the command. Claude skips the check for quick edits, planning, or read-only tasks - it only runs when you're about to write code and it's been a while since the last session.
 
 ## Framework Rules
 
 Trestle scaffolds a few guardrails that prevent common drift patterns:
 
 - **MEMORY.md is governed by signal density, not line count.** Every line should affect Claude's behavior in roughly 1-in-5 conversations. Soft cap ~60 lines as a smell test, not a hard limit. Overflow that's rarely-but-occasionally needed goes to `MEMORY-extended.md`.
-- **Feedback goes inline.** Don't create standalone feedback files — write corrections directly into the relevant KB file (skill, book chapter, project overview). Only genuinely cross-cutting rules stay in `claude-memory/`.
-- **Skills need 3 repetitions.** Don't encode a workflow as a skill until you've done it manually at least 3 times. Log candidates in `claude-memory/project_skill_backlog.md`; check `claude-skills/_index.md` first — an existing skill may just need a new mode.
-- **Sweep memory periodically.** Monthly (or when MEMORY.md crosses its soft cap), run an active / archive / promote pass so the hot layer stays dense — `claude-memory/feedback_memory_decay.md`.
-- **Analytics are passive.** Skill invocations log to `_analytics/usage.log`. Consolidate into `_analytics/weekly-summary.md` on your sweep — there's no background job — to spot dead-weight skills and recurring manual work worth a skill.
+- **Feedback goes inline.** Don't create standalone feedback files - write corrections directly into the relevant KB file (skill, book chapter, project overview). Only genuinely cross-cutting rules stay in `claude-memory/`.
+- **Skills need 3 repetitions.** Don't encode a workflow as a skill until you've done it manually at least 3 times. Log candidates in `claude-memory/project_skill_backlog.md`; check `claude-skills/_index.md` first - an existing skill may just need a new mode.
+- **Sweep memory periodically.** Monthly (or when MEMORY.md crosses its soft cap), run an active / archive / promote pass so the hot layer stays dense - `claude-memory/feedback_memory_decay.md`.
+- **Analytics are passive.** Skill invocations log to `_analytics/usage.log`. Consolidate into `_analytics/weekly-summary.md` on your sweep - there's no background job - to spot dead-weight skills and recurring manual work worth a skill.
 
 ## What's Private?
 
-Your knowledge base contains personal professional context — your name, role, company, projects, expertise, and communication preferences. Here's how privacy works:
+Your knowledge base contains personal professional context - your name, role, company, projects, expertise, and communication preferences. Here's how privacy works:
 
 | What | Where | Visibility |
 |------|-------|-----------|
-| Credentials, API keys | `_private/` | **Git-ignored** — never leaves your machine |
-| Profile, projects, preferences | `me/`, `projects/`, memory files | **In your repo** — keep the repo private |
-| Skills, books, resources | `claude-skills/`, `books/` | **In your repo** — keep the repo private |
+| Credentials, API keys | `_private/` | **Git-ignored** - never leaves your machine |
+| Profile, projects, preferences | `me/`, `projects/`, memory files | **In your repo** - keep the repo private |
+| Skills, books, resources | `claude-skills/`, `books/` | **In your repo** - keep the repo private |
 | `_analytics/` | In repo (not sensitive) |
 
 **The KB repo should be private.** When you sync to GitHub, use:
@@ -154,7 +156,7 @@ If you ever need to share specific files publicly, copy them out rather than mak
 
 ## Compatibility
 
-Tested with Claude Code v2.1.x on macOS, Linux, and Windows. The knowledge base is standard markdown — if Claude Code's internals change, your content is safe. If something breaks after an update, [open an issue](https://github.com/liormesh/trestle/issues).
+Tested with Claude Code v2.1.x on macOS, Linux, and Windows. The knowledge base is standard markdown - if Claude Code's internals change, your content is safe. If something breaks after an update, [open an issue](https://github.com/liormesh/trestle/issues).
 
 ## Re-running
 
@@ -162,7 +164,7 @@ Running `/onboard` again is safe. It detects your existing workspace and offers 
 
 ## This Is Opinionated
 
-This setup reflects how I actually work — multiple projects, persistent memory, structured knowledge base, everything symlinked together. It's the system I've refined over months of daily use with Claude Code.
+This setup reflects how I actually work - multiple projects, persistent memory, structured knowledge base, everything symlinked together. It's the system I've refined over months of daily use with Claude Code.
 
 It won't fit everyone. But if you're building things and want an AI that actually knows your context, this is a solid starting point. Everything is editable after setup.
 
@@ -180,8 +182,8 @@ See [CHANGELOG.md](CHANGELOG.md) for release notes.
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT - see [LICENSE](LICENSE).
 
 ---
 
-Built at [Revgineer](https://revgineer.com) — a lab for things that should exist.
+Built at [Revgineer](https://revgineer.com) - a lab for things that should exist.

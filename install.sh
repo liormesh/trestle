@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Trestle — Installer
+# Trestle - Installer
 # One-liner: git clone https://github.com/liormesh/trestle /tmp/trestle && /tmp/trestle/install.sh
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -15,18 +15,18 @@ echo ""
 echo "  Installing to: $CLAUDE_DIR"
 echo ""
 echo "  What this does:"
-echo "    1. Copies the starter skills (/onboard, /cq, /73) to $SKILLS_DIR/"
+echo "    1. Copies the starter skills (/onboard, /cq, /73, /visualize) to $SKILLS_DIR/"
 echo "    2. Creates a bootstrap CLAUDE.md (triggers /onboard on first run)"
 echo ""
-echo "  That's it — a handful of files. The real setup happens when you type /onboard."
+echo "  That's it - a handful of files. The real setup happens when you type /onboard."
 echo ""
 
 # 1. Ensure ~/.claude exists
 mkdir -p "$CLAUDE_DIR"
 mkdir -p "$SKILLS_DIR"
 
-# 2. Copy the starter skills (onboard + the session rituals cq / 73)
-for skill in onboard cq 73; do
+# 2. Copy the starter skills (onboard + the session rituals cq / 73 + the /visualize skill and its book)
+for skill in onboard cq 73 visualize; do
   if [ -d "$SKILLS_DIR/$skill" ]; then
     echo "  [skip] /$skill skill already installed"
   else

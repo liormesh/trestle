@@ -1,4 +1,4 @@
-# Trestle — Installer (Windows PowerShell)
+# Trestle - Installer (Windows PowerShell)
 # One-liner: git clone https://github.com/liormesh/trestle $env:TEMP\trestle; & $env:TEMP\trestle\install.ps1
 
 $ErrorActionPreference = "Stop"
@@ -14,7 +14,7 @@ Write-Host ""
 Write-Host "  Installing to: $ClaudeDir"
 Write-Host ""
 Write-Host "  What this does:"
-Write-Host "    1. Copies the starter skills (/onboard, /cq, /73) to $SkillsDir\"
+Write-Host "    1. Copies the starter skills (/onboard, /cq, /73, /visualize) to $SkillsDir\"
 Write-Host "    2. Creates a bootstrap CLAUDE.md (triggers /onboard on first run)"
 Write-Host ""
 Write-Host "  That's it - a handful of files. The real setup happens when you type /onboard."
@@ -23,8 +23,8 @@ Write-Host ""
 # 1. Ensure ~/.claude exists
 New-Item -ItemType Directory -Force -Path $SkillsDir | Out-Null
 
-# 2. Copy the starter skills (onboard + the session rituals cq / 73)
-foreach ($skill in @("onboard", "cq", "73")) {
+# 2. Copy the starter skills (onboard + the session rituals cq / 73 + the /visualize skill and its book)
+foreach ($skill in @("onboard", "cq", "73", "visualize")) {
     $DestDir = Join-Path $SkillsDir $skill
     if (Test-Path $DestDir) {
         Write-Host "  [skip] /$skill skill already installed"

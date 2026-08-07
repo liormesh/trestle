@@ -14,7 +14,7 @@ set -euo pipefail
 TEST_HOME="/tmp/claude-onboard-test"
 
 echo ""
-echo "  Trestle — Test Mode"
+echo "  Trestle - Test Mode"
 echo "  Test HOME: $TEST_HOME"
 echo ""
 
