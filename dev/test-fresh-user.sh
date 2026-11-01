@@ -40,11 +40,32 @@ echo "  ---"
 sed 's/^/  /' "$TEST_HOME/.claude/CLAUDE.md"
 echo "  ---"
 echo ""
-for skill in onboard cq 73; do
-  echo "  /$skill SKILL.md exists: $([ -f "$TEST_HOME/.claude/skills/$skill/SKILL.md" ] && echo 'yes' || echo 'NO')"
+fails=0
+check() { if eval "$2"; then echo "  ok   $1"; else echo "  FAIL $1"; fails=$((fails+1)); fi; }
+for skill in onboard cq 73 visualize; do
+  check "/$skill SKILL.md installed" "[ -f '$TEST_HOME/.claude/skills/$skill/SKILL.md' ]"
 done
+for f in secret-guard.mjs link-guard.mjs kb-check.mjs lib.mjs VERSION; do
+  check "tool $f installed" "[ -f '$TEST_HOME/.claude/trestle/$f' ]"
+done
+for f in memory/feedback-memory-size.md kb/claude-md.md kb/gitignore kb/handoff-readme.md; do
+  check "template $f shipped" "[ -f '$TEST_HOME/.claude/skills/onboard/templates/$f' ]"
+done
+
 echo ""
-echo "  Install script works correctly."
+echo "  Upgrade path: re-run over an edited install..."
+echo "# local edit" >> "$TEST_HOME/.claude/skills/73/SKILL.md"
+out="$(HOME="$TEST_HOME" bash "$(dirname "$0")/../install.sh")"
+check "re-run is up to date for untouched skills" "printf '%s' \"\$out\" | grep -q '/cq skill is up to date'"
+check "edited skill gets updated" "printf '%s' \"\$out\" | grep -q 'Updated /73 skill'"
+check "previous copy backed up" "ls '$TEST_HOME'/.claude/trestle/backups/*/skills/73/SKILL.md >/dev/null 2>&1"
+check "backup holds the local edit" "grep -q '# local edit' '$TEST_HOME'/.claude/trestle/backups/*/skills/73/SKILL.md"
+check "no stray skill dirs in skills/" "[ \$(ls '$TEST_HOME/.claude/skills' | wc -l) -eq 4 ]"
+
+echo ""
+bash "$(dirname "$0")/test-tools.sh" || fails=$((fails+1))
+
+[ "$fails" -eq 0 ] && echo "  Install script works correctly." || { echo "  $fails install check(s) FAILED."; }
 echo ""
 echo "  To test the full /onboard flow:"
 echo ""
@@ -60,3 +81,4 @@ echo "  Cleaning up test..."
 rm -rf "$TEST_HOME"
 echo "  Done."
 echo ""
+exit $fails

@@ -6,16 +6,23 @@ $ErrorActionPreference = "Stop"
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ClaudeDir = Join-Path $env:USERPROFILE ".claude"
 $SkillsDir = Join-Path $ClaudeDir "skills"
+$TrestleDir = Join-Path $ClaudeDir "trestle"
+$Version = (Get-Content (Join-Path $ScriptDir "tools\VERSION") -Raw).Trim()
+$BackupDir = Join-Path $TrestleDir ("backups\" + (Get-Date -Format "yyyyMMdd-HHmmss"))
+$Updated = $false
 
 Write-Host ""
-Write-Host "  Trestle"
+Write-Host "  Trestle v$Version"
 Write-Host "  -----------------"
 Write-Host ""
 Write-Host "  Installing to: $ClaudeDir"
 Write-Host ""
 Write-Host "  What this does:"
 Write-Host "    1. Copies the starter skills (/onboard, /cq, /73, /visualize) to $SkillsDir\"
-Write-Host "    2. Creates a bootstrap CLAUDE.md (triggers /onboard on first run)"
+Write-Host "       (already installed? older copies are backed up, then updated)"
+Write-Host "    2. Copies three small tools to $TrestleDir\ - a secret guard, a link guard"
+Write-Host "       and the /73 health check (Node.js scripts, no dependencies)"
+Write-Host "    3. Creates a bootstrap CLAUDE.md (triggers /onboard on first run)"
 Write-Host ""
 Write-Host "  That's it - a handful of files. The real setup happens when you type /onboard."
 Write-Host ""
@@ -23,15 +30,44 @@ Write-Host ""
 # 1. Ensure ~/.claude exists
 New-Item -ItemType Directory -Force -Path $SkillsDir | Out-Null
 
-# 2. Copy the starter skills (onboard + the session rituals cq / 73 + the /visualize skill and its book)
+# 2. Copy the starter skills. An existing copy that differs is backed up first, then replaced.
+function Get-TreeHash($Dir) {
+    (Get-ChildItem -Recurse -File $Dir | Sort-Object FullName | ForEach-Object {
+        $_.FullName.Substring($Dir.Length) + ":" + (Get-FileHash $_.FullName).Hash
+    }) -join "|"
+}
 foreach ($skill in @("onboard", "cq", "73", "visualize")) {
+    $Src = Join-Path $ScriptDir "skills\$skill"
     $DestDir = Join-Path $SkillsDir $skill
     if (Test-Path $DestDir) {
-        Write-Host "  [skip] /$skill skill already installed"
+        if ((Get-TreeHash $Src) -eq (Get-TreeHash $DestDir)) {
+            Write-Host "  [ok]   /$skill skill is up to date"
+            continue
+        }
+        $Bak = Join-Path $BackupDir "skills"
+        New-Item -ItemType Directory -Force -Path $Bak | Out-Null
+        Move-Item $DestDir (Join-Path $Bak $skill)
+        Copy-Item -Recurse $Src $DestDir
+        $Updated = $true
+        Write-Host "  [done] Updated /$skill skill (previous copy -> $Bak\$skill)"
     } else {
-        Copy-Item -Recurse (Join-Path $ScriptDir "skills\$skill") $DestDir
+        Copy-Item -Recurse $Src $DestDir
         Write-Host "  [done] Installed /$skill skill -> $DestDir"
     }
+}
+
+# 2b. Tools: hooks + health check (config.json, written by /onboard, is never touched here)
+New-Item -ItemType Directory -Force -Path $TrestleDir | Out-Null
+$VersionFile = Join-Path $TrestleDir "VERSION"
+if ((Test-Path $VersionFile) -and ((Get-Content $VersionFile -Raw).Trim() -ne $Version)) { $Updated = $true }
+Copy-Item (Join-Path $ScriptDir "tools\*") $TrestleDir -Force
+Write-Host "  [done] Installed tools -> $TrestleDir (v$Version)"
+
+$Node = Get-Command node -ErrorAction SilentlyContinue
+if ($Node -and ([int](& node -p "process.versions.node.split('.')[0]") -ge 18)) {
+    Write-Host "  [ok]   Node.js $(& node --version) found"
+} else {
+    Write-Host "  [warn] Node.js 18+ not found - the hooks and the /73 health check need it (https://nodejs.org)"
 }
 
 # 3. Create bootstrap CLAUDE.md (only if none exists)
@@ -56,5 +92,10 @@ if ($ScriptDir -like "$env:TEMP*") {
 }
 
 Write-Host ""
-Write-Host "  Ready. Open Claude Code from your home directory and type /onboard."
+if ($Updated) {
+    Write-Host "  Updated to v$Version. Open Claude Code from your home directory, type /onboard"
+    Write-Host "  and pick (d) to bring your workspace's rules up to date. Your content is not touched."
+} else {
+    Write-Host "  Ready. Open Claude Code from your home directory and type /onboard."
+}
 Write-Host ""

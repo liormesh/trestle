@@ -1,5 +1,50 @@
 # Changelog
 
+## v1.8.0 - 2026-11-01
+
+**How it stays healthy.** v1.8 catches Trestle up with three months of running the framework for real, and closes every open item from the July 2026 review. The headline is a lesson about maintenance: rules written in memory get forgotten; rituals hold; **checks that fail hold best**. So this release adds checks - two guardrail hooks, a health check `/73` runs at every sign-off, and a ratchet - and finally gives existing installs an upgrade path.
+
+### Added
+
+- **Guardrail hooks** (`~/.claude/trestle/`, registered in `settings.json` by `/onboard`):
+  - **Secret guard** (`PreToolUse`) - blocks a write into the KB, memory or skills that contains a credential-shaped value (Anthropic / OpenAI / GitHub / Slack / AWS / Google / Stripe keys, JWTs, private keys, password-bearing connection strings). `_private/` is exempt. **Why:** a key that gets committed stays in git history even after you delete or gitignore it - the only real fix is rotating it. Blocking it at write time is cheap; cleaning up after is not.
+  - **Link guard** (`PostToolUse`) - after a markdown write, reports links in the text just written that point at nothing, with a did-you-mean. **Why:** a broken pointer is a silent dead end - nothing fails, Claude just never finds the file.
+- **Workspace health check** - `kb-check.mjs`, run by `/73` as step 0 (and by you, any time). Checks the files touched this session for broken links, secrets, memory files with bad frontmatter or no index line, misplaced `state:` fields; checks MEMORY.md for size and dated (volatile) lines; flags projects stalled 45+ days, an overdue memory sweep, uncommitted/unpushed work, and a framework upgrade waiting. `--usage 30` reports skill usage from the analytics log.
+- **The ratchet** - `_analytics/baseline.json` records vault-wide problem counts (broken links, secrets, unindexed memory, ...). They may fall (the baseline tightens automatically), never rise. Pre-existing problems are recorded on the first run, not blamed on the session.
+- **Project state (`state:`)** - every `projects/<p>/overview.md` now carries `state: project | area | archive | icebox` + `state_changed:`, and only the overview carries it. "What's in flight?" becomes a grep; a `project` that hasn't moved in 45 days gets flagged, because a project is supposed to finish.
+- **Handoff docs** - `pm/handoff/<project>-resume-prompt.md` (living: finish line, in flight, next step - what `/cq` reads first) and `<project>-handoff-log.md` (append-only, written by `/73`). Live project status finally has a home that isn't MEMORY.md.
+- **Upgrade path - `/onboard` option (d) "update the framework".** Re-run the installer, then `/onboard` → (d): renames legacy files and fixes every reference, refreshes shipped rule files you never edited (silently), asks per file before touching ones you did (replace / keep / merge), adds what's new (handoff docs, project states, hooks, `.gitignore` lines), refreshes the managed block of `CLAUDE.md`, and never rewrites your own content.
+- **`dev/test-tools.sh`** - tests the hooks and the health check against a fixture workspace with planted defects (29 checks); `dev/test-fresh-user.sh` now also tests the upgrade path (18 more).
+
+### Changed
+
+- **The memory-size rule now leads with volatility.** Soft cap moves from ~60 to ~100 lines, and the primary rule becomes: **no live status in the always-loaded index** - "launching Thursday" lives in the handoff doc, MEMORY.md points there. **Why:** volatile lines go stale, force constant edits to the one file loaded into every conversation (each edit defeats prompt caching), and end up disagreeing with the project doc. This was the most valuable lesson missing from v1.7.
+- **`/73` is cheaper and does more.** Runs the health check first and fixes every WARN before signing off; writes live status to the handoff doc instead of memory; targets **3 tool calls or fewer** (one sign-off was measured at millions of tokens because each call re-sends the whole session) and is pinned to a smaller model (`model: sonnet`) - the sign-off is bookkeeping, not reasoning.
+- **`/cq` reads the handoff doc first**, then the overview; reports the project's state and the current finish line; flags a stalled project.
+- **The memory sweep is triggered by `/73`, not a calendar.** `SWEEP: OVERDUE` after 30 days; a finished sweep logs a `memory-sweep` line. **Why:** in real use, everything scheduled monthly stopped happening; everything attached to a ritual kept running.
+- **Memory files follow one convention:** `<type>-<slug>.md`, kebab-case, `name:` equal to the filename, a pointer line in MEMORY.md. The scaffolded files used to break their own rule (`feedback_health_check.md`, `name: MEMORY.md size & density rule`). Frontmatter follows the shape your Claude Code version writes (`metadata: type:` in current versions); the health check accepts both shapes.
+- **Shipped files are real templates** (`skills/onboard/templates/`) instead of text inlined in the 750-line skill - copied verbatim and version-stamped, which is what makes the upgrade diff possible.
+- **`CLAUDE.md` rules sit between `trestle:rules` markers** so upgrades refresh them without touching anything you add outside.
+- **The installer updates instead of skipping.** An installed skill that differs from the new version is backed up to `~/.claude/trestle/backups/<timestamp>/` and replaced; unchanged skills are left alone. It also installs the tools and checks for Node.js 18+.
+- **Analytics have one strict format:** `<ISO-UTC> <skill> <note>`. The health check flags malformed lines.
+- **`.gitignore` keeps the KB text-only:** adds `node_modules/`, `.env*` and large media/archive types. **Why:** a single committed `node_modules` once made up two thirds of a real vault - and deleting it later doesn't shrink git history.
+- **`credentials.md` says what happens after a leak:** a committed key is exposed until rotated; production keys belong in a real secret manager.
+
+### Removed
+
+- **`_analytics/weekly-summary.md`** - a manual consolidation file that never got filled in real use. The sweep reads the log directly (`kb-check.mjs --usage 30`). Option (d) offers to delete it.
+
+### Requirements
+
+- **Node.js 18+** is now needed for the hooks and the health check (plain `node`, no packages). Without it the hooks fail open and `/73` skips step 0 - everything else works as before.
+
+### Migration (existing workspaces)
+
+1. Re-run the install one-liner (it updates the skills and installs the tools; your old skills are backed up).
+2. Open Claude Code from your home directory, run `/onboard`, pick **(d)**.
+
+That's it - (d) handles renames, rule refreshes, project states, handoff docs and hooks, asks before touching anything you edited, and finishes by running the health check once so the ratchet records your starting point.
+
 ## v1.7.0 - 2026-08-07
 
 A new starter skill with its own book, plus two fixes that strengthen the **Agents leg** and make the permission story honest. (This release also sweeps the whole repo to hyphens - no em/en dashes anywhere.)

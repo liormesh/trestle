@@ -1,0 +1,22 @@
+# Secrets - never in git
+_private/
+.env
+.env.*
+
+# The KB is text. Code dependencies and big binaries bloat git history forever
+# (deleting them later does not shrink the repo). Keep media in a drive/bucket and link to it.
+node_modules/
+*.mp4
+*.mov
+*.webm
+*.zip
+*.dmg
+*.psd
+*.pptx
+*.key
+
+# Editor / OS noise
+.DS_Store
+*.swp
+.obsidian/
+.trash/
